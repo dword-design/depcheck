@@ -26,6 +26,10 @@ function makeArgv(module, options) {
     argv.push(`--ignore-dirs=${options.ignoreDirs.join(',')}`);
   }
 
+  if (options.prodDependencyMatches) {
+    argv.push(`--prod-dependency-matches=${options.prodDependencyMatches.join(',')}`);
+  }
+
   if (options.detectors) {
     argv.push(`--detectors=${options.detectors.map((f) => f.name).join(',')}`);
   }
@@ -54,14 +58,13 @@ function testCli(argv) {
       (data) => {
         error = data;
       },
-      (exitCode) =>
-        resolve({
-          log,
-          error,
-          exitCode,
-          logs: log.split('\n').filter((line) => line),
-          errors: error.split('\n').filter((line) => line),
-        }),
+      (exitCode) => resolve({
+        log,
+        error,
+        exitCode,
+        logs: log.split('\n').filter((line) => line),
+        errors: error.split('\n').filter((line) => line),
+      }),
     ),
   );
 }

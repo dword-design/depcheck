@@ -69,6 +69,7 @@ export default function depcheck(rootDir, options, callback) {
     defaultOptions.ignoreDirs,
     options.ignoreDirs,
   );
+  const prodDependencyMatches = getOption('prodDependencyMatches');
   const skipMissing = getOption('skipMissing');
 
   const detectors = getOption('detectors');
@@ -101,6 +102,7 @@ export default function depcheck(rootDir, options, callback) {
   return check({
     rootDir,
     ignoreDirs,
+    prodDependencyMatches,
     skipMissing,
     deps,
     devDeps,

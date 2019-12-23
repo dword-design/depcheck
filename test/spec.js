@@ -737,4 +737,20 @@ export default [
     },
     expectedErrorCode: -1,
   },
+  {
+    name: 'support devDependencyMatches',
+    module: 'dev_dependency_matches',
+    options: {
+      prodDependencyMatches: ['src/**'],
+    },
+    expected: {
+      dependencies: ['foo'],
+      devDependencies: [],
+      missing: {},
+      using: {
+        foo: ['test/index.js'],
+      },
+    },
+    expectedErrorCode: -1,
+  },
 ];

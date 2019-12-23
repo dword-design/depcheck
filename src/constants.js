@@ -29,6 +29,7 @@ export const defaultOptions = {
     'node_modules',
     'bower_components',
   ],
+  prodDependencyMatches: [],
   skipMissing: false,
   parsers: {
     '*.js': availableParsers.jsx,

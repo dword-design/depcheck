@@ -95,6 +95,10 @@ export default function cli(args, log, error, exit) {
     .describe('json', 'Output results to JSON')
     .describe('ignores', 'Comma separated package list to ignore')
     .describe('ignore-dirs', 'Comma separated folder names to ignore')
+    .describe(
+      'prod-dependency-matches',
+      'Comma separated matchers supporting production dependencies',
+    )
     .describe('parsers', 'Comma separated glob:parser pair list')
     .describe('detectors', 'Comma separated detector list')
     .describe('specials', 'Comma separated special parser list')
@@ -116,6 +120,10 @@ export default function cli(args, log, error, exit) {
         ignoreBinPackage: opt.argv.ignoreBinPackage,
         ignoreMatches: (opt.argv.ignores || '').split(','),
         ignoreDirs: (opt.argv.ignoreDirs || '').split(','),
+        prodDependencyMatches:
+          opt.argv.prodDependencyMatches !== undefined
+            ? opt.argv.prodDependencyMatches.split(',')
+            : [],
         parsers: getParsers(opt.argv.parsers),
         detectors: getDetectors(opt.argv.detectors),
         specials: getSpecials(opt.argv.specials),

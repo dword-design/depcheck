@@ -199,43 +199,61 @@ function buildResult(
   devDeps,
   peerDeps,
   optionalDeps,
+  rootDir,
+  prodDependencyMatches,
   skipMissing,
 ) {
-  const usingDepsLookup = lodash(result.using)
-    // { f1:[d1,d2,d3], f2:[d2,d3,d4] }
-    .toPairs()
-    // [ [f1,[d1,d2,d3]], [f2,[d2,d3,d4]] ]
-    .map(([file, dep]) => [dep, lodash.times(dep.length, () => file)])
-    // [ [ [d1,d2,d3],[f1,f1,f1] ], [ [d2,d3,d4],[f2,f2,f2] ] ]
-    .map((pairs) => lodash.zip(...pairs))
-    // [ [ [d1,f1],[d2,f1],[d3,f1] ], [ [d2,f2],[d3,f2],[d4,f2]] ]
-    .flatten()
-    // [ [d1,f1], [d2,f1], [d3,f1], [d2,f2], [d3,f2], [d4,f2] ]
-    .groupBy(([dep]) => dep)
-    // { d1:[ [d1,f1] ], d2:[ [d2,f1],[d2,f2] ], d3:[ [d3,f1],[d3,f2] ], d4:[ [d4,f2] ] }
-    .mapValues((pairs) => pairs.map(lodash.last))
-    // { d1:[ f1 ], d2:[ f1,f2 ], d3:[ f1,f2 ], d4:[ f2 ] }
-    .value();
+  const mapToDependencies = (using) =>
+    lodash(using)
+      // { f1:[d1,d2,d3], f2:[d2,d3,d4] }
+      .toPairs()
+      // [ [f1,[d1,d2,d3]], [f2,[d2,d3,d4]] ]
+      .map(([file, dep]) => [dep, lodash.times(dep.length, () => file)])
+      // [ [ [d1,d2,d3],[f1,f1,f1] ], [ [d2,d3,d4],[f2,f2,f2] ] ]
+      .map((pairs) => lodash.zip(...pairs))
+      // [ [ [d1,f1],[d2,f1],[d3,f1] ], [ [d2,f2],[d3,f2],[d4,f2]] ]
+      .flatten()
+      // [ [d1,f1], [d2,f1], [d3,f1], [d2,f2], [d3,f2], [d4,f2] ]
+      .groupBy(([dep]) => dep)
+      // { d1:[ [d1,f1] ], d2:[ [d2,f1],[d2,f2] ], d3:[ [d3,f1],[d3,f2] ], d4:[ [d4,f2] ] }
+      .mapValues((pairs) => pairs.map(lodash.last))
+      // { d1:[ f1 ], d2:[ f1,f2 ], d3:[ f1,f2 ], d4:[ f2 ] }
+      .value();
 
-  const usingDeps = Object.keys(usingDepsLookup);
+  const usingProdDepsLookup = mapToDependencies(
+    lodash.pickBy(
+      result.using,
+      (dep, file) =>
+        prodDependencyMatches.length === 0 ||
+        prodDependencyMatches.some((pattern) =>
+          minimatch(path.relative(rootDir, file), pattern),
+        ),
+    ),
+  );
+
+  const usingAllDepsLookup = mapToDependencies(result.using);
+
+  const usingProdDeps = Object.keys(usingProdDepsLookup);
+  const usingAllDeps = Object.keys(usingAllDepsLookup);
+
   const allDeps = deps
     .concat(devDeps)
     .concat(peerDeps)
     .concat(optionalDeps);
-  const missingDeps = lodash.difference(usingDeps, allDeps);
+  const missingDeps = lodash.difference(usingProdDeps, allDeps);
 
   const missingDepsLookup = skipMissing
     ? []
     : lodash(missingDeps)
-        .map((missingDep) => [missingDep, usingDepsLookup[missingDep]])
+        .map((missingDep) => [missingDep, usingProdDepsLookup[missingDep]])
         .fromPairs()
         .value();
 
   return {
-    dependencies: lodash.difference(deps, usingDeps),
-    devDependencies: lodash.difference(devDeps, usingDeps),
+    dependencies: lodash.difference(deps, usingProdDeps),
+    devDependencies: lodash.difference(devDeps, usingAllDeps),
     missing: missingDepsLookup,
-    using: usingDepsLookup,
+    using: usingAllDepsLookup,
     invalidFiles: result.invalidFiles,
     invalidDirs: result.invalidDirs,
   };
@@ -244,6 +262,7 @@ function buildResult(
 export default function check({
   rootDir,
   ignoreDirs,
+  prodDependencyMatches,
   skipMissing,
   deps,
   devDeps,
@@ -261,6 +280,15 @@ export default function check({
     parsers,
     detectors,
   ).then((result) =>
-    buildResult(result, deps, devDeps, peerDeps, optionalDeps, skipMissing),
+    buildResult(
+      result,
+      deps,
+      devDeps,
+      peerDeps,
+      optionalDeps,
+      rootDir,
+      prodDependencyMatches,
+      skipMissing,
+    ),
   );
 }
