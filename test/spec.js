@@ -738,8 +738,8 @@ export default [
     expectedErrorCode: -1,
   },
   {
-    name: 'support devDependencyMatches',
-    module: 'dev_dependency_matches',
+    name: 'support prodDependencyMatches',
+    module: 'prod_dependency_matches',
     options: {
       prodDependencyMatches: ['src/**'],
     },
