@@ -236,12 +236,6 @@ function buildResult(
   const usingProdDeps = Object.keys(usingProdDepsLookup);
   const usingAllDeps = Object.keys(usingAllDepsLookup);
 
-  const allDeps = deps
-    .concat(devDeps)
-    .concat(peerDeps)
-    .concat(optionalDeps);
-  const missingDeps = lodash.difference(usingProdDeps, allDeps);
-
   const missingDepsLookup = skipMissing
     ? []
     : (() => {

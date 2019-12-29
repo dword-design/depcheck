@@ -25,7 +25,9 @@ function makeArgv(module, options) {
   }
 
   if (options.prodDependencyMatches) {
-    argv.push(`--prod-dependency-matches=${options.prodDependencyMatches.join(',')}`);
+    argv.push(
+      `--prod-dependency-matches=${options.prodDependencyMatches.join(',')}`,
+    );
   }
 
   if (options.detectors) {
@@ -56,13 +58,14 @@ function testCli(argv) {
       (data) => {
         error = data;
       },
-      (exitCode) => resolve({
-        log,
-        error,
-        exitCode,
-        logs: log.split('\n').filter((line) => line),
-        errors: error.split('\n').filter((line) => line),
-      }),
+      (exitCode) =>
+        resolve({
+          log,
+          error,
+          exitCode,
+          logs: log.split('\n').filter((line) => line),
+          errors: error.split('\n').filter((line) => line),
+        }),
     ),
   );
 }
