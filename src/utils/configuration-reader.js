@@ -51,18 +51,9 @@ export function getCliArgs(args, version) {
     });
 }
 
-/* istanbul ignore next */
-function returnNull() {
-  return null;
-}
-
 export async function getRCFileConfiguration(moduleName, filename) {
   try {
-    const configFileExplorer = cosmiconfig(moduleName, {
-      // this prevents cosmiconfig from picking up .js configuration files. "null" means no file was found.
-      // Gotta extract `() => null` into a function to be able to ignore the line from the code coverage count.
-      loaders: { '.js': returnNull },
-    });
+    const configFileExplorer = cosmiconfig(moduleName);
     const findings = await (filename !== undefined
       ? configFileExplorer.load(filename)
       : configFileExplorer.search());

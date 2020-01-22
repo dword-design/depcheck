@@ -116,6 +116,21 @@ describe('depcheck command line', () => {
       exitCode.should.equal(0);
     }));
 
+  it('should support .js config files', () =>
+    testCli(
+      makeArgv('js_config_file', {
+        config: path.resolve(
+          'test/fake_modules',
+          'js_config_file',
+          'depcheck.config.js',
+        ),
+      }),
+    ).then(({ log, error, exitCode }) => {
+      log.should.equal('No depcheck issue');
+      error.should.be.empty();
+      exitCode.should.equal(0);
+    }));
+
   it('should output error when folder is not a package', () =>
     testCli([__dirname]).then(({ log, error, exitCode }) => {
       error.should
