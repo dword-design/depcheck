@@ -39,18 +39,18 @@ function getParsers(parsers) {
       }
     */
     const sanitizedParserNames = Array.isArray(parserNames) ? parserNames : [parserNames];
-    const parserLambdas = sanitizedParserNames.map(parserName => _index.default.parser[parserName]);
+    const parserLambdas = sanitizedParserNames.map(parserName => typeof parserName === 'string' ? _index.default.parser[parserName] : parserName);
     return [extension, parserLambdas];
   });
   return _lodash.default.fromPairs(parserTuples);
 }
 
 function getDetectors(detectors) {
-  return _lodash.default.isUndefined(detectors) ? undefined : detectors.map(detectorName => _index.default.detector[detectorName]);
+  return _lodash.default.isUndefined(detectors) ? undefined : detectors.map(detectorName => typeof detectorName === 'string' ? _index.default.detector[detectorName] : detectorName);
 }
 
 function getSpecials(specials) {
-  return _lodash.default.isUndefined(specials) ? undefined : specials.map(specialName => _index.default.special[specialName]);
+  return _lodash.default.isUndefined(specials) ? undefined : specials.map(specialName => typeof specialName === 'string' ? _index.default.special[specialName] : specialName);
 }
 
 function noIssue(result) {
