@@ -1,5 +1,5 @@
-import fs from 'fs';
 import path from 'path';
+import debug from 'debug';
 import lodash from 'lodash';
 import walkdir from 'walkdir';
 import minimatch from 'minimatch';
@@ -9,6 +9,7 @@ import { loadModuleData, readJSON } from './utils';
 import getNodes from './utils/parser';
 import { getAtTypesName } from './utils/typescript';
 import { availableParsers } from './constants';
+import { getContent } from './utils/file';
 
 function isModule(dir) {
   try {
@@ -49,17 +50,9 @@ function discoverPropertyDep(rootDir, deps, property, depName) {
 
 function getDependencies(dir, filename, deps, parser, detectors) {
   return new Promise((resolve, reject) => {
-    fs.readFile(filename, 'utf8', (error, content) => {
-      if (error) {
-        reject(error);
-      }
-
-      try {
-        resolve(parser(content, filename, deps, dir));
-      } catch (syntaxError) {
-        reject(syntaxError);
-      }
-    });
+    getContent(filename)
+      .then((content) => resolve(parser(content, filename, deps, dir)))
+      .catch((error) => reject(error));
   }).then((ast) => {
     // when parser returns string array, skip detector step and treat them as dependencies.
     const dependencies =
@@ -102,11 +95,19 @@ function getDependencies(dir, filename, deps, parser, detectors) {
       .flatten()
       .value();
 
-    return dependencies.concat(peerDeps).concat(optionalDeps);
+    return lodash(dependencies)
+      .concat(peerDeps)
+      .concat(optionalDeps)
+      .filter((dep) => dep && dep !== '.' && dep !== '..') // TODO why need check?
+      .filter((dep) => !lodash.includes(builtInModules, dep))
+      .uniq()
+      .value();
   });
 }
 
 function checkFile(dir, filename, deps, parsers, detectors) {
+  debug('depcheck:checkFile')(filename);
+
   const basename = path.basename(filename);
   const targets = lodash(parsers)
     .keys()
@@ -117,25 +118,31 @@ function checkFile(dir, filename, deps, parsers, detectors) {
 
   return targets.map((parser) =>
     getDependencies(dir, filename, deps, parser, detectors).then(
-      (using) => ({
-        using: {
-          [filename]: lodash(using)
-            .filter((dep) => dep && dep !== '.' && dep !== '..') // TODO why need check?
-            .filter((dep) => !lodash.includes(builtInModules, dep))
-            .uniq()
-            .value(),
-        },
-      }),
-      (error) => ({
-        invalidFiles: {
-          [filename]: error,
-        },
-      }),
+      (using) => {
+        if (using.length) {
+          debug('depcheck:checkFile:using')(filename, parser, using);
+        }
+        return {
+          using: {
+            [filename]: using,
+          },
+        };
+      },
+      (error) => {
+        debug('depcheck:checkFile:error')(filename, parser, error);
+        return {
+          invalidFiles: {
+            [filename]: error,
+          },
+        };
+      },
     ),
   );
 }
 
 function checkDirectory(dir, rootDir, ignoreDirs, deps, parsers, detectors) {
+  debug('depcheck:checkDirectory')(dir);
+
   return new Promise((resolve) => {
     const promises = [];
     const finder = walkdir(dir, { no_recurse: true, follow_symlinks: true });
@@ -159,15 +166,16 @@ function checkDirectory(dir, rootDir, ignoreDirs, deps, parsers, detectors) {
       promises.push(...checkFile(rootDir, filename, deps, parsers, detectors)),
     );
 
-    finder.on('error', (_, error) =>
+    finder.on('error', (_, error) => {
+      debug('depcheck:checkDirectory:error')(dir, error);
       promises.push(
         Promise.resolve({
           invalidDirs: {
             [error.path]: error,
           },
         }),
-      ),
-    );
+      );
+    });
 
     finder.on('end', () =>
       resolve(

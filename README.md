@@ -40,21 +40,23 @@ npm install -g depcheck typescript
 
 The _special_ component is used to recognize the dependencies that are not generally used in the above syntax files. The following scenarios are supported by specials:
 
-- `bin` - Dependencies used in npm commands, Travis scripts or other CI scripts
-- `eslint` - [ESLint](https://www.npmjs.com/package/eslint) configuration presets, parsers and plugins
-- `tslint` - [TSLint](https://www.npmjs.com/package/tslint) configuration presets, parsers and plugins
-- `webpack` - [Webpack](https://www.npmjs.com/package/webpack) loaders
 - `babel` - [Babel](https://www.npmjs.com/package/babel) presets and plugins
-- [Grunt](https://www.npmjs.com/package/grunt) plugins
-- `feross-standard` - [Feross standard](https://www.npmjs.com/package/standard) format parser
-- `mocha` - [Mocha](https://www.npmjs.com/package/mocha) explicit required dependencies
-- `jest` - [Jest](https://www.npmjs.com/package/jest) properties in [Jest Configuration](https://jestjs.io/docs/en/configuration)
+- `bin` - Dependencies used in npm commands, Travis scripts or other CI scripts
 - `commitizen` - [Commitizen](https://www.npmjs.com/package/commitizen) configuration adaptor
-- `gulp-load-plugins` - [Gulp-load-plugins](https://www.npmjs.com/package/gulp-load-plugins) lazy loaded plugins
+- `eslint` - [ESLint](https://www.npmjs.com/package/eslint) configuration presets, parsers and plugins
+- `feross-standard` - [Feross standard](https://www.npmjs.com/package/standard) format parser
 - `gatsby` - [Gatsby](https://www.npmjs.com/package/gatsby) configuration parser
+- `gulp-load-plugins` - [Gulp-load-plugins](https://www.npmjs.com/package/gulp-load-plugins) lazy loaded plugins
 - `husky` - [Husky](https://www.npmjs.com/package/husky) configuration parser
+- `istanbul` - [Istanbul nyc](https://www.npmjs.com/package/nyc) configuration extensions
+- `jest` - [Jest](https://www.npmjs.com/package/jest) properties in [Jest Configuration](https://jestjs.io/docs/en/configuration)
+- `karma` - [Karma](https://www.npmjs.com/package/karma) configuration frameworks, browsers, preprocessors and reporters
 - `lint-staged` - [Lint-staged](https://www.npmjs.com/package/lint-staged) configuration parser
-- `ttypescript` - [ttypescript](https://github.com/cevek/ttypescript) transformer parser
+- `mocha` - [Mocha](https://www.npmjs.com/package/mocha) explicit required dependencies
+- `prettier` - [Prettier](https://www.npmjs.com/package/prettier) configuration module
+- `tslint` - [TSLint](https://www.npmjs.com/package/tslint) configuration presets, parsers and plugins
+- `ttypescript` - [ttypescript](https://github.com/cevek/ttypescript) transformers
+- `webpack` - [Webpack](https://www.npmjs.com/package/webpack) loaders
 
 The logic of a special is not perfect. There might be [false alerts](#false-alert). If this happens, please open an issue for us.
 
@@ -81,6 +83,22 @@ All of the arguments are optional:
 `--help`: Show the help message.
 
 `--parsers`, `--detectors` and `--specials`: These arguments are for advanced usage. They provide an easy way to customize the file parser and dependency detection. Check [the pluggable design document](https://github.com/depcheck/depcheck/blob/master/doc/pluggable-design.md) for more information.
+
+## Usage with a configuration file
+
+Depcheck can be used with an rc configuration file. In order to do so, create a .depcheckrc file in your project's package.json folder, and set the CLI keys in YAML, JSON, and Javascript formats.
+For example, the CLI arguments `--ignores="eslint,babel-*" --skip-missing=true` would turn into:
+
+**_.depcheckrc_**
+
+```
+ignores: ["eslint", "babel-*"]
+skip-missing: true
+```
+
+**Important:** if provided CLI arguments conflict with configuration file ones, the CLI ones will take precedence over the rc file ones.
+
+The rc configuration file can also contain the following extensions: `.json`, `.yaml`, `.yml`.
 
 ## API
 

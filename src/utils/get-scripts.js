@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import lodash from 'lodash';
@@ -23,26 +22,28 @@ function getCacheOrFile(key, fn) {
 }
 
 const travisCommands = [
-  // Reference: http://docs.travis-ci.com/user/customizing-the-build/#The-Build-Lifecycle
+  // Reference: https://docs.travis-ci.com/user/job-lifecycle
   'before_install',
   'install',
   'before_script',
   'script',
-  'after_success or after_failure',
+  'before_cache',
+  'after_success',
+  'after_failure',
   'before_deploy',
+  // 'deploy', // currently ignored
   'after_deploy',
   'after_script',
 ];
 
-export default function getScripts(filepath, content = null) {
+export default function getScripts(filepath, content) {
   return getCacheOrFile(filepath, () => {
     const basename = path.basename(filepath);
-    const fileContent =
-      content !== null ? content : fs.readFileSync(filepath, 'utf-8');
 
     if (basename === 'package.json') {
-      return lodash.values(JSON.parse(fileContent).scripts || {});
+      return lodash.values(JSON.parse(content).scripts || {});
     }
+
     if (basename === '.travis.yml') {
       const metadata = yaml.safeLoad(content) || {};
       return lodash(travisCommands)

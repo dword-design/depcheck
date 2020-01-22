@@ -1,6 +1,7 @@
 import path from 'path';
 import lodash from 'lodash';
 import { tryRequire } from '../utils';
+import { fakeWebpack } from '../utils/webpack';
 
 const webpackConfigRegex = /webpack(\..+)?\.conf(?:ig|)\.(babel\.)?[jt]s/;
 const loaderTemplates = ['*-webpack-loader', '*-web-loader', '*-loader', '*'];
@@ -119,18 +120,62 @@ function parseEntries(entries, deps) {
     .value();
 }
 
+function parseWebpackConfig(webpackConfig, deps) {
+  const module = webpackConfig.module || {};
+  const entry = webpackConfig.entry || [];
+
+  const webpack1Loaders = parseWebpack1(module, deps);
+  const webpack2Loaders = parseWebpack2(module, deps);
+  const webpackEntries = parseEntries(entry, deps);
+  return [...webpack1Loaders, ...webpack2Loaders, ...webpackEntries];
+}
+
+function loadNextWebpackConfig(filepath) {
+  const fakeConfig = {
+    plugins: [],
+    module: { rules: [] },
+    optimization: { splitChunks: { cacheGroups: {} } },
+  };
+
+  const fakeContext = { webpack: fakeWebpack, defaultLoaders: {} };
+
+  try {
+    const nextConfig = require(filepath); // eslint-disable-line global-require
+    if (nextConfig && nextConfig.webpack) {
+      return nextConfig.webpack(fakeConfig, fakeContext);
+    }
+  } catch (error) {
+    console.error(
+      'Next.js webpack configuration detection failed with the following error',
+      error,
+      'Support for this feature is new and experimental, please report issues at https://github.com/depcheck/depcheck/issues',
+    );
+  }
+
+  return null;
+}
+
 export default function parseWebpack(_content, filepath, deps) {
   const filename = path.basename(filepath);
-  if (webpackConfigRegex.test(filename)) {
-    const wpConfig = tryRequire(filepath);
-    if (wpConfig) {
-      const module = wpConfig.module || {};
-      const entry = wpConfig.entry || [];
 
-      const webpack1Loaders = parseWebpack1(module, deps);
-      const webpack2Loaders = parseWebpack2(module, deps);
-      const webpackEntries = parseEntries(entry, deps);
-      return [...webpack1Loaders, ...webpack2Loaders, ...webpackEntries];
+  if (webpackConfigRegex.test(filename)) {
+    const webpackConfig = tryRequire(filepath);
+    if (webpackConfig) {
+      return parseWebpackConfig(webpackConfig, deps);
+    }
+  }
+
+  if (filename === 'styleguide.config.js') {
+    const styleguideConfig = tryRequire(filepath);
+    if (styleguideConfig && styleguideConfig.webpackConfig) {
+      return parseWebpackConfig(styleguideConfig.webpackConfig, deps);
+    }
+  }
+
+  if (filename === 'next.config.js') {
+    const webpackConfig = loadNextWebpackConfig(filepath);
+    if (webpackConfig) {
+      return parseWebpackConfig(webpackConfig, deps);
     }
   }
 
