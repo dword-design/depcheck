@@ -169,9 +169,9 @@ function buildResult(result, deps, devDeps, peerDeps, optionalDeps, rootDir, pro
   const missingDepsLookup = skipMissing ? [] : (() => {
     const allDeps = deps.concat(devDeps).concat(peerDeps).concat(optionalDeps);
 
-    const missingDeps = _lodash.default.difference(usingProdDeps, allDeps);
+    const missingDeps = _lodash.default.difference(usingAllDeps, allDeps);
 
-    return (0, _lodash.default)(missingDeps).map(missingDep => [missingDep, usingProdDepsLookup[missingDep]]).fromPairs().value();
+    return (0, _lodash.default)(missingDeps).map(missingDep => [missingDep, usingAllDepsLookup[missingDep]]).fromPairs().value();
   })();
   return {
     dependencies: _lodash.default.difference(deps, usingProdDeps),
