@@ -252,9 +252,9 @@ function buildResult(
           .concat(peerDeps)
           .concat(optionalDeps);
 
-        const missingDeps = lodash.difference(usingProdDeps, allDeps);
+        const missingDeps = lodash.difference(usingAllDeps, allDeps);
         return lodash(missingDeps)
-          .map((missingDep) => [missingDep, usingProdDepsLookup[missingDep]])
+          .map((missingDep) => [missingDep, usingAllDepsLookup[missingDep]])
           .fromPairs()
           .value();
       })();
