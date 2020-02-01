@@ -9,14 +9,17 @@ var _path = _interopRequireDefault(require("path"));
 
 var _requirePackageName = _interopRequireDefault(require("require-package-name"));
 
+var _file = require("../utils/file");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function parseCommitizen(content, filePath, deps, rootDir) {
+async function parseCommitizen(filename, deps, rootDir) {
   const packageJsonPath = _path.default.resolve(rootDir, 'package.json');
 
-  const resolvedFilePath = _path.default.resolve(filePath);
+  const resolvedFilePath = _path.default.resolve(filename);
 
   if (resolvedFilePath === packageJsonPath) {
+    const content = await (0, _file.getContent)(filename);
     const metadata = JSON.parse(content);
 
     if (metadata.config && metadata.config.commitizen && metadata.config.commitizen.path) {

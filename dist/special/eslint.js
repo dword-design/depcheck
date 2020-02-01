@@ -15,6 +15,8 @@ var _utils = require("../utils");
 
 var _cliTools = require("../utils/cli-tools");
 
+var _file = require("../utils/file");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function resolveConfigModule(preset, rootDir) {
@@ -124,8 +126,8 @@ function checkConfig(config, rootDir, includedDeps = []) {
 
 const configNameRegex = /^\.eslintrc(\.(json|js|yml|yaml))?$/;
 
-function parseESLint(content, filename, _, rootDir) {
-  const config = (0, _cliTools.loadConfig)('eslint', configNameRegex, filename, content, rootDir);
+async function parseESLint(filename, deps, rootDir) {
+  const config = await (0, _cliTools.loadConfig)('eslint', configNameRegex, filename, rootDir);
 
   if (config) {
     return checkConfig(config, rootDir);
@@ -136,6 +138,7 @@ function parseESLint(content, filename, _, rootDir) {
   const resolvedFilePath = _path.default.resolve(rootDir, filename);
 
   if (resolvedFilePath === packageJsonPath) {
+    const content = await (0, _file.getContent)(filename);
     const parsed = JSON.parse(content);
 
     if (parsed.eslintConfig) {

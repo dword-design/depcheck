@@ -9,6 +9,8 @@ var _path = _interopRequireDefault(require("path"));
 
 var _cliTools = require("../utils/cli-tools");
 
+var _file = require("../utils/file");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const configNameRegex = /^(\.nycrc(\.(json|yml|yaml))?|nyc.config.js)$/;
@@ -34,14 +36,16 @@ function getExtendsDependencies(extendConfig, deps) {
   return dependencies;
 }
 
-function parseIstanbul(content, filepath, deps) {
-  const basename = _path.default.basename(filepath);
+async function parseIstanbul(filename, deps) {
+  const basename = _path.default.basename(filename);
 
   let config;
 
   if (configNameRegex.test(basename)) {
+    const content = await (0, _file.getContent)(filename);
     config = (0, _cliTools.parse)(content);
   } else if (basename === 'package.json') {
+    const content = await (0, _file.getContent)(filename);
     config = JSON.parse(content).nyc;
   }
 

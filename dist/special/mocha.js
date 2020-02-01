@@ -15,6 +15,8 @@ var _cliTools = require("../utils/cli-tools");
 
 var _utils = require("../utils");
 
+var _file = require("../utils/file");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const knownReporters = ['dot', 'doc', 'tap', 'json', 'html', 'list', 'min', 'spec', 'nyan', 'xunit', 'markdown', 'progress', 'landing', 'json-stream'];
@@ -76,20 +78,21 @@ function getParamDependencies(content, deps) {
 
 const configNameRegex = /^\.mocharc\.(json|jsonc|js|yml|yaml)$/;
 
-function parseMocha(content, filepath, deps, rootDir) {
+async function parseMocha(filename, deps, rootDir) {
   const defaultOptPath = _path.default.resolve(rootDir, 'test/mocha.opts');
 
-  const basename = _path.default.basename(filepath);
+  const basename = _path.default.basename(filename);
 
   let cliConfig;
   let paramConfig;
 
-  if (filepath === defaultOptPath) {
-    cliConfig = content;
+  if (filename === defaultOptPath) {
+    cliConfig = await (0, _file.getContent)(filename);
   } else if (configNameRegex.test(basename)) {
+    const content = await (0, _file.getContent)(filename);
     paramConfig = (0, _cliTools.parse)(content);
   } else {
-    const scripts = (0, _utils.getScripts)(filepath, content);
+    const scripts = await (0, _utils.getScripts)(filename);
     const mochaScript = scripts.find(s => s.indexOf('mocha') !== -1);
 
     if (mochaScript) {
@@ -97,6 +100,7 @@ function parseMocha(content, filepath, deps, rootDir) {
     }
 
     if (basename === 'package.json') {
+      const content = await (0, _file.getContent)(filename);
       paramConfig = JSON.parse(content).mocha;
     }
   }
@@ -105,13 +109,13 @@ function parseMocha(content, filepath, deps, rootDir) {
 
   if (cliConfig) {
     let optsConfig;
-    optsConfig = getOptsConfig(filepath, cliConfig, '--opts');
+    optsConfig = getOptsConfig(filename, cliConfig, '--opts');
 
     if (optsConfig) {
       requires.push(...getCliDependencies(optsConfig, deps));
     }
 
-    optsConfig = getOptsConfig(filepath, cliConfig, '--config');
+    optsConfig = getOptsConfig(filename, cliConfig, '--config');
 
     if (optsConfig) {
       requires.push(...getParamDependencies((0, _cliTools.parse)(optsConfig), deps));

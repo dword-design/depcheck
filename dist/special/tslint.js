@@ -49,8 +49,8 @@ const configNameRegex = /^tslint\.(json|yaml|yml)$/;
  * [here](https://palantir.github.io/tslint/usage/configuration/).
  */
 
-function parseTSLint(content, filename, deps, rootDir) {
-  const config = (0, _cliTools.loadConfig)('tslint', configNameRegex, filename, content, rootDir);
+async function parseTSLint(filename, deps, rootDir) {
+  const config = await (0, _cliTools.loadConfig)('tslint', configNameRegex, filename, rootDir);
 
   if (config) {
     return ['tslint', ...checkConfig(config, rootDir)];

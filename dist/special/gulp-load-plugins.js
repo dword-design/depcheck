@@ -13,11 +13,13 @@ var _minimatch = _interopRequireDefault(require("minimatch"));
 
 var _traverse = _interopRequireDefault(require("@babel/traverse"));
 
-var _es = _interopRequireDefault(require("../parser/es7"));
+var _es = require("../parser/es7");
 
 var _importDeclaration = _interopRequireDefault(require("../detector/importDeclaration"));
 
 var _requireCallExpression = _interopRequireDefault(require("../detector/requireCallExpression"));
+
+var _file = require("../utils/file");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -133,15 +135,16 @@ function check(content, deps, path) {
   return [];
 }
 
-function parseGulpPlugins(content, filePath, deps, rootDir) {
-  const resolvedPath = (0, _path.resolve)(filePath);
+async function parseGulpPlugins(filename, deps, rootDir) {
+  const resolvedPath = (0, _path.resolve)(filename);
 
   if (resolvedPath !== (0, _path.resolve)(rootDir, 'gulpfile.js') && resolvedPath !== (0, _path.resolve)(rootDir, 'gulpfile.babel.js')) {
     return [];
   }
 
   const pluginLookup = getPluginLookup(deps);
-  const ast = (0, _es.default)(content);
+  const content = await (0, _file.getContent)(filename);
+  const ast = await (0, _es.parseES7Content)(content);
   const results = [];
   (0, _traverse.default)(ast, {
     enter(path) {

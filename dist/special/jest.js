@@ -9,6 +9,8 @@ var _path = _interopRequireDefault(require("path"));
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
+var _file = require("../utils/file");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const _ = _lodash.default;
@@ -76,13 +78,13 @@ function checkOptions(deps, options = {}) {
   return filter(deps, pickedOptions);
 }
 
-function parseJest(content, filePath, deps, rootDir) {
-  const filename = _path.default.basename(filePath);
+async function parseJest(filename, deps, rootDir) {
+  const basename = _path.default.basename(filename);
 
-  if (jestConfigRegex.test(filename)) {
+  if (jestConfigRegex.test(basename)) {
     try {
       // eslint-disable-next-line global-require
-      const options = require(filePath) || {};
+      const options = require(filename) || {};
       return checkOptions(deps, options);
     } catch (error) {
       return [];
@@ -94,6 +96,7 @@ function parseJest(content, filePath, deps, rootDir) {
   const resolvedFilePath = _path.default.resolve(rootDir, filename);
 
   if (resolvedFilePath === packageJsonPath) {
+    const content = await (0, _file.getContent)(filename);
     const metadata = parse(content);
     return checkOptions(deps, metadata.jest);
   }

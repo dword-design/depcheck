@@ -67,6 +67,7 @@ declare namespace depcheck {
   const detector: {
     'exportDeclaration': Detector;
     'expressViewEngine': Detector;
+    'extract': Detector;
     'gruntLoadTaskCallExpression': Detector;
     'importCallExpression': Detector;
     'importDeclaration': Detector;

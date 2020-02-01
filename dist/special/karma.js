@@ -13,11 +13,15 @@ var _resolve = _interopRequireDefault(require("resolve"));
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
-var _es = _interopRequireDefault(require("../parser/es7"));
+var _es = _interopRequireWildcard(require("../parser/es7"));
 
 var _parser = _interopRequireDefault(require("../utils/parser"));
 
 var _utils = require("../utils");
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -79,8 +83,8 @@ function parseConfigModuleExports(node) {
   return null;
 }
 
-function parseConfig(content) {
-  const ast = (0, _es.default)(content);
+async function parseConfig(filename) {
+  const ast = await (0, _es.default)(filename);
   return (0, _lodash.default)((0, _parser.default)(ast)).map(node => parseConfigModuleExports(node)).flatten().filter(val => val != null).uniq().first();
 }
 
@@ -96,7 +100,7 @@ function collectInstalledPluginInfo(karmaPluginsInstalled, rootDir) {
     }); // don't evaluate the contents, since it probably has module requirements we can't load
 
 
-    const ast = (0, _es.default)(packageContents);
+    const ast = (0, _es.parseES7Content)(packageContents);
     const p = (0, _lodash.default)((0, _parser.default)(ast)).map(node => parsePluginModuleExports(node)).flatten().uniq().value();
     p.forEach(k => {
       pluginInfo[k] = plugin;
@@ -169,14 +173,14 @@ function collectUsages(config, karmaPluginsInstalled, rootDir) {
   .concat(collectPreprocessors(config, pluginInfo)).concat(collectReporters(config, pluginInfo));
 }
 
-function parseKarma(content, filePath, deps, rootDir) {
+async function parseKarma(filename, deps, rootDir) {
   const resolvedConfigPaths = supportedConfNames.map(name => _path.default.resolve(rootDir, name));
 
-  if (!resolvedConfigPaths.includes(filePath)) {
+  if (!resolvedConfigPaths.includes(filename)) {
     return [];
   }
 
-  const config = parseConfig(content); // possibly unused plugins
+  const config = await parseConfig(filename); // possibly unused plugins
 
   const karmaPluginsInstalled = deps.filter(dep => dep.startsWith('karma-')).concat(collectExplicitPlugins(config));
   return collectUsages(config, karmaPluginsInstalled, rootDir);

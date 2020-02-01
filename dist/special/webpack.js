@@ -130,33 +130,34 @@ function loadNextWebpackConfig(filepath) {
       return nextConfig.webpack(fakeConfig, fakeContext);
     }
   } catch (error) {
+    /* eslint no-console: off */
     console.error('Next.js webpack configuration detection failed with the following error', error, 'Support for this feature is new and experimental, please report issues at https://github.com/depcheck/depcheck/issues');
   }
 
   return null;
 }
 
-function parseWebpack(_content, filepath, deps) {
-  const filename = _path.default.basename(filepath);
+function parseWebpack(filename, deps) {
+  const basename = _path.default.basename(filename);
 
-  if (webpackConfigRegex.test(filename)) {
-    const webpackConfig = (0, _utils.tryRequire)(filepath);
+  if (webpackConfigRegex.test(basename)) {
+    const webpackConfig = (0, _utils.tryRequire)(filename);
 
     if (webpackConfig) {
       return parseWebpackConfig(webpackConfig, deps);
     }
   }
 
-  if (filename === 'styleguide.config.js') {
-    const styleguideConfig = (0, _utils.tryRequire)(filepath);
+  if (basename === 'styleguide.config.js') {
+    const styleguideConfig = (0, _utils.tryRequire)(filename);
 
     if (styleguideConfig && styleguideConfig.webpackConfig) {
       return parseWebpackConfig(styleguideConfig.webpackConfig, deps);
     }
   }
 
-  if (filename === 'next.config.js') {
-    const webpackConfig = loadNextWebpackConfig(filepath);
+  if (basename === 'next.config.js') {
+    const webpackConfig = loadNextWebpackConfig(filename);
 
     if (webpackConfig) {
       return parseWebpackConfig(webpackConfig, deps);

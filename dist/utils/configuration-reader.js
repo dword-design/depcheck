@@ -9,7 +9,7 @@ exports.getConfiguration = getConfiguration;
 
 var _yargs = _interopRequireDefault(require("yargs"));
 
-var _cosmiconfig = _interopRequireDefault(require("cosmiconfig"));
+var _cosmiconfig = require("cosmiconfig");
 
 var _camelcase = _interopRequireDefault(require("camelcase"));
 
@@ -44,7 +44,7 @@ function getCliArgs(args, version) {
 
 async function getRCFileConfiguration(moduleName, filename) {
   try {
-    const configFileExplorer = (0, _cosmiconfig.default)(moduleName);
+    const configFileExplorer = (0, _cosmiconfig.cosmiconfig)(moduleName);
     const findings = await (filename !== undefined ? configFileExplorer.load(filename) : configFileExplorer.search());
     return !findings || findings.isEmpty ? {} : convertObjectToCamelCase(findings.config);
   } catch (error) {

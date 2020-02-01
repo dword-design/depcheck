@@ -9,9 +9,11 @@ var _path = _interopRequireDefault(require("path"));
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
-var _es = _interopRequireDefault(require("../parser/es7"));
+var _es = require("../parser/es7");
 
 var _parser = _interopRequireDefault(require("../utils/parser"));
+
+var _file = require("../utils/file");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -32,26 +34,23 @@ function parseConfigModuleExports(node) {
   return null;
 }
 
-function parseConfig(content) {
-  const ast = (0, _es.default)(content);
+async function parseConfig(content) {
+  const ast = (0, _es.parseES7Content)(content);
   return (0, _lodash.default)((0, _parser.default)(ast)).map(node => parseConfigModuleExports(node)).flatten().filter(val => val != null).uniq().first();
 }
 
-function loadConfig(filename, content) {
+async function parseGatsbyConfig(filename) {
   const basename = _path.default.basename(filename);
 
   const GatbyConfig = 'gatsby-config.js';
 
   if (GatbyConfig === basename) {
-    const config = parseConfig(content);
+    const content = await (0, _file.getContent)(filename);
+    const config = await parseConfig(content);
     return config.plugins || [];
   }
 
   return [];
-}
-
-function parseGatsbyConfig(content, filename) {
-  return loadConfig(filename, content);
 }
 
 module.exports = exports.default;

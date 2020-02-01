@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getContent = getContent;
+exports.setContent = setContent;
 
 var _fs = _interopRequireDefault(require("fs"));
 
@@ -22,4 +23,8 @@ function getContent(filename) {
   }
 
   return promises[filename];
+}
+
+function setContent(filename, content) {
+  promises[filename] = Promise.resolve(content);
 }

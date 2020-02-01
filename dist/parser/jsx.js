@@ -7,7 +7,10 @@ exports.default = parseJSX;
 
 var _parser = require("@babel/parser");
 
-function parseJSX(content) {
+var _file = require("../utils/file");
+
+async function parseJSX(filename) {
+  const content = await (0, _file.getContent)(filename);
   return (0, _parser.parse)(content, {
     sourceType: 'module',
     // Enable all known compatible @babel/parser plugins at the time of writing.

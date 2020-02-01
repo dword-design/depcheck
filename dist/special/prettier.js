@@ -11,11 +11,9 @@ var _utils = require("../utils");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function parsePrettier(content, filepath) {
-  const filename = _path.default.basename(filepath);
-
-  if (filename === 'package.json') {
-    const config = (0, _utils.readJSON)(filepath);
+function parsePrettier(filename) {
+  if (_path.default.basename(filename) === 'package.json') {
+    const config = (0, _utils.readJSON)(filename);
 
     if (config && config.prettier && typeof config.prettier === 'string') {
       return [config.prettier];

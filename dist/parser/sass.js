@@ -19,12 +19,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const sass = (0, _utils.tryRequire)('node-sass');
 
-function parseSASS(content, filePath, deps, rootDir) {
+async function parseSASS(filename, deps, rootDir) {
   const {
     stats
   } = sass.renderSync({
-    file: filePath,
-    includePaths: [_path.default.dirname(filePath)],
+    file: filename,
+    includePaths: [_path.default.dirname(filename)],
     importer: _nodeSassTildeImporter.default
   });
   const result = (0, _lodash.default)(stats.includedFiles).map(file => _path.default.relative(rootDir, file)).filter(file => file.indexOf('node_modules') === 0) // refer to node_modules

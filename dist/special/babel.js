@@ -11,6 +11,8 @@ var _lodash = _interopRequireDefault(require("lodash"));
 
 var _cliTools = require("../utils/cli-tools");
 
+var _file = require("../utils/file");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function parse(content) {
@@ -71,14 +73,15 @@ function checkOptions(deps, options = {}) {
 
 const regex = /^(\.babelrc|babelrc\.js|babel\.config\.js)?$/;
 
-function parseBabel(content, filePath, deps, rootDir) {
-  const config = (0, _cliTools.loadConfig)('babel', regex, filePath, content, rootDir);
+async function parseBabel(filename, deps, rootDir) {
+  const config = await (0, _cliTools.loadConfig)('babel', regex, filename, rootDir);
 
   if (config) {
     return checkOptions(deps, config);
   }
 
-  if (_path.default.basename(filePath) === 'package.json') {
+  if (_path.default.basename(filename) === 'package.json') {
+    const content = await (0, _file.getContent)(filename);
     const metadata = parse(content);
     return checkOptions(deps, metadata.babel);
   }

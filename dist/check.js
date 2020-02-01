@@ -27,8 +27,6 @@ var _typescript = require("./utils/typescript");
 
 var _constants = require("./constants");
 
-var _file = require("./utils/file");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
@@ -69,29 +67,26 @@ function discoverPropertyDep(rootDir, deps, property, depName) {
   return _lodash.default.intersection(deps, propertyDeps);
 }
 
-function getDependencies(dir, filename, deps, parser, detectors) {
-  return new Promise((resolve, reject) => {
-    (0, _file.getContent)(filename).then(content => resolve(parser(content, filename, deps, dir))).catch(error => reject(error));
-  }).then(ast => {
-    // when parser returns string array, skip detector step and treat them as dependencies.
-    const dependencies = _lodash.default.isArray(ast) && ast.every(_lodash.default.isString) ? ast : (0, _lodash.default)((0, _parser.default)(ast)).map(node => detect(detectors, node, deps)).flatten().uniq().map(_requirePackageName.default).thru(_dependencies => parser === _constants.availableParsers.typescript ? // If this is a typescript file, importing foo would also use @types/foo, but
-    // only if @types/foo is already a specified dependency.
-    (0, _lodash.default)(_dependencies).map(dependency => {
-      const atTypesName = (0, _typescript.getAtTypesName)(dependency);
-      return deps.includes(atTypesName) ? [dependency, atTypesName] : [dependency];
-    }).flatten().value() : _dependencies).value();
+async function getDependencies(dir, filename, deps, parser, detectors) {
+  const result = await parser(filename, deps, dir); // when parser returns string array, skip detector step and treat them as dependencies.
 
-    const discover = _lodash.default.partial(discoverPropertyDep, dir, deps);
+  const dependencies = _lodash.default.isArray(result) && result.every(_lodash.default.isString) ? result : (0, _lodash.default)((0, _parser.default)(result)).map(node => detect(detectors, node, deps)).flatten().uniq().map(_requirePackageName.default).thru(_dependencies => parser === _constants.availableParsers.typescript ? // If this is a typescript file, importing foo would also use @types/foo, but
+  // only if @types/foo is already a specified dependency.
+  (0, _lodash.default)(_dependencies).map(dependency => {
+    const atTypesName = (0, _typescript.getAtTypesName)(dependency);
+    return deps.includes(atTypesName) ? [dependency, atTypesName] : [dependency];
+  }).flatten().value() : _dependencies).value();
 
-    const discoverPeerDeps = _lodash.default.partial(discover, 'peerDependencies');
+  const discover = _lodash.default.partial(discoverPropertyDep, dir, deps);
 
-    const discoverOptionalDeps = _lodash.default.partial(discover, 'optionalDependencies');
+  const discoverPeerDeps = _lodash.default.partial(discover, 'peerDependencies');
 
-    const peerDeps = (0, _lodash.default)(dependencies).map(discoverPeerDeps).flatten().value();
-    const optionalDeps = (0, _lodash.default)(dependencies).map(discoverOptionalDeps).flatten().value();
-    return (0, _lodash.default)(dependencies).concat(peerDeps).concat(optionalDeps).filter(dep => dep && dep !== '.' && dep !== '..') // TODO why need check?
-    .filter(dep => !_lodash.default.includes(_builtinModules.default, dep)).uniq().value();
-  });
+  const discoverOptionalDeps = _lodash.default.partial(discover, 'optionalDependencies');
+
+  const peerDeps = (0, _lodash.default)(dependencies).map(discoverPeerDeps).flatten().value();
+  const optionalDeps = (0, _lodash.default)(dependencies).map(discoverOptionalDeps).flatten().value();
+  return (0, _lodash.default)(dependencies).concat(peerDeps).concat(optionalDeps).filter(dep => dep && dep !== '.' && dep !== '..') // TODO why need check?
+  .filter(dep => !_lodash.default.includes(_builtinModules.default, dep)).uniq().value();
 }
 
 function checkFile(dir, filename, deps, parsers, detectors) {

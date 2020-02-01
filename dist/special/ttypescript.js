@@ -16,11 +16,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // Search in all files looking like a TypeScript configuration file.
 const tsconfigPattern = /tsconfig(?:\.[^.]+)*\.json/;
 
-function parseTTypeScript(_content, filepath, deps) {
-  const filename = _path.default.basename(filepath);
+function parseTTypeScript(filename, deps) {
+  const basename = _path.default.basename(filename);
 
-  if (tsconfigPattern.test(filename)) {
-    const content = (0, _utils.readJSON)(filepath) || {};
+  if (tsconfigPattern.test(basename)) {
+    const content = (0, _utils.readJSON)(filename) || {};
 
     if (content.compilerOptions && content.compilerOptions.plugins) {
       return (0, _lodash.default)(content.compilerOptions.plugins).filter(plugin => plugin.transform).map(plugin => plugin.transform).intersection(deps).uniq().value();

@@ -1,7 +1,9 @@
 import { parse } from '@babel/parser';
 import { parseComponent } from 'vue-template-compiler';
+import { getContent } from '../utils/file';
 
-export default function parseVue(content) {
+export default async function parseVue(filename) {
+  const content = await getContent(filename);
   const parsed = parseComponent(content);
   if (!parsed.script) {
     return [];
@@ -19,8 +21,8 @@ export default function parseVue(content) {
       'classProperties',
       'classPrivateProperties',
       'classPrivateMethods',
-      ['decorators', { decoratorsBeforeExport: true }],
-      // not decorators-legacy
+      // ['decorators', { decoratorsBeforeExport: true }],
+      'decorators-legacy', // Vue cannot support both decorators
       'doExpressions',
       'dynamicImport',
       'exportDefaultFrom',
