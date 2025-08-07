@@ -51,6 +51,7 @@
   "dependencies": {
     "@babel/parser": "^7.23.0",
     "@babel/traverse": "^7.23.2",
+    "@babel/types": "^7.28.2",
     "@vue/compiler-sfc": "^3.3.4",
     "callsites": "^3.1.0",
     "camelcase": "^6.3.0",

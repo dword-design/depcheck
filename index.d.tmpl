@@ -7,7 +7,7 @@ declare function depcheck<T>(
 ): Promise<T>;
 
 declare namespace depcheck {
-  type Node = Record<string, any>;
+  type Node = import('@babel/types').Node;
 
   type Parser = (filePath: string, deps: ReadonlyArray<string>, rootDir: string) => Node | string[];
 
