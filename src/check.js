@@ -137,9 +137,10 @@ async function getDependencies({
           .flatMap(lodash.partial(applyImportsMap, importsMap))
           .map(requirePackageName)
           .thru((_dependencies) =>
-            parser === availableParsers.typescript
+            [availableParsers.typescript, availableParsers.vue].includes(parser)
               ? // If this is a typescript file, importing foo would also use @types/foo, but
                 // only if @types/foo is already a specified dependency.
+                // TODO: Cover case where Vue script lang is not TypeScript (then @types/foo isn't needed).
                 lodash(_dependencies)
                   .map((dependency) => {
                     const atTypesName = getAtTypesName(dependency);
