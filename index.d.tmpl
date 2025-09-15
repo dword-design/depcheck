@@ -11,7 +11,7 @@ declare namespace depcheck {
 
   type Parser = (filePath: string, deps: ReadonlyArray<string>, rootDir: string) => Node | string[];
 
-  type Detector = (node: Node) => ReadonlyArray<string> | string;
+  type Detector = (node: Node, deps: ReadonlyArray<string>) => ReadonlyArray<string> | string;
 
   interface PackageDependencies {
     [dependencyName: string]: string;
